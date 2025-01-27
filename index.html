@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Conversor DEC para DME</title>
+    <style>
+        .container {
+            display: flex;
+            flex-direction: column;
+            max-width: 400px;
+            margin: 20px auto;
+        }
+        .input-group {
+            margin-bottom: 10px;
+        }
+        .input-group input {
+            width: 80%;
+            padding: 8px;
+        }
+        .input-group button {
+            padding: 8px;
+            margin-left: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="input-group">
+            <label for="dec-coordinates">Coordenadas DEC:</label>
+            <input type="text" id="dec-coordinates" value="-21.192665, -50.449177">
+            <button onclick="copyToClipboard('dec-coordinates')">Copiar</button>
+        </div>
+
+        <div class="input-group">
+            <label for="dec-lat">DEC LAT:</label>
+            <input type="text" id="dec-lat" readonly>
+            <button onclick="copyToClipboard('dec-lat')">Copiar</button>
+        </div>
+
+        <div class="input-group">
+            <label for="dec-long">DEC LONG:</label>
+            <input type="text" id="dec-long" readonly>
+            <button onclick="copyToClipboard('dec-long')">Copiar</button>
+        </div>
+
+        <div class="input-group">
+            <label for="dme-lat">DME LAT:</label>
+            <input type="text" id="dme-lat" readonly>
+            <button onclick="copyToClipboard('dme-lat')">Copiar</button>
+        </div>
+
+        <div class="input-group">
+            <label for="dme-long">DME LONG:</label>
+            <input type="text" id="dme-long" readonly>
+            <button onclick="copyToClipboard('dme-long')">Copiar</button>
+        </div>
+    </div>
+
+    <script>
+        function decToDme(dec) {
+            const isNegative = dec < 0;
+            const absDec = Math.abs(dec);
+            const degrees = Math.floor(absDec);
+            const minutes = Math.floor((absDec - degrees) * 60);
+            const seconds = ((absDec - degrees - minutes / 60) * 3600).toFixed(3);
+
+            return {
+                degrees: degrees,
+                minutes: minutes,
+                seconds: seconds,
+                isNegative: isNegative
+            };
+        }
+
+        function updateDme() {
+            const decCoordinates = document.getElementById('dec-coordinates').value;
+            const coordinatesArray = decCoordinates.split(',');
+
+            if (coordinatesArray.length === 2) {
+                const decLat = parseFloat(coordinatesArray[0].trim());
+                const decLong = parseFloat(coordinatesArray[1].trim());
+
+                const latDme = decToDme(decLat);
+                const longDme = decToDme(decLong);
+
+                // Atualiza os campos DEC LAT e DEC LONG
+                document.getElementById('dec-lat').value = decLat;
+                document.getElementById('dec-long').value = decLong;
+
+                // Atualiza os campos DME LAT e DME LONG
+                document.getElementById('dme-lat').value = (latDme.isNegative ? '-' : '') + latDme.degrees + ' ' + latDme.minutes + ' ' + latDme.seconds;
+                document.getElementById('dme-long').value = (longDme.isNegative ? '-' : '') + longDme.degrees + ' ' + longDme.minutes + ' ' + longDme.seconds;
+            }
+        }
+
+        function copyToClipboard(id) {
+            const input = document.getElementById(id);
+            input.select();
+            document.execCommand('copy');
+        }
+
+        document.getElementById('dec-coordinates').addEventListener('input', updateDme);
+
+        // Inicializar os campos de DME
+        updateDme();
+    </script>
+</body>
+</html>

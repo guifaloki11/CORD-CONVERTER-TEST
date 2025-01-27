@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Conversor DEC para DME</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+        }
+
+        body {
+            background: #f5f5f5;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 500px;
+        }
+
+        h1 {
+            color: #1a1a1a;
+            font-size: 1.5rem;
+            margin-bottom: 1.5rem;
+            text-align: center;
+        }
+
+        .input-group {
+            margin-bottom: 1.2rem;
+        }
+
+        .input-group:last-child {
+            margin-bottom: 0;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #4a4a4a;
+            font-weight: 500;
+        }
+
+        .input-wrapper {
+            display: flex;
+            gap: 8px;
+        }
+
+        input {
+            flex: 1;
+            padding: 0.75rem;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 1rem;
+            transition: border-color 0.2s;
+            outline: none;
+        }
+
+        input:focus {
+            border-color: #2563eb;
+        }
+
+        input:read-only {
+            background-color: #f8f8f8;
+        }
+
+        button {
+            background-color: #2563eb;
+            color: white;
+            border: none;
+            padding: 0.75rem 1rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: background-color 0.2s;
+            min-width: 80px;
+        }
+
+        button:hover {
+            background-color: #1d4ed8;
+        }
+
+        .copy-feedback {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #4a4a4a;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 4px;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Conversor DEC para DME</h1>
+        <div class="input-group">
+            <label for="dec-coordinates">Coordenadas DEC:</label>
+            <div class="input-wrapper">
+                <input type="text" id="dec-coordinates" value="-21.192665, -50.449177" placeholder="Ex: -21.192665, -50.449177">
+                <button onclick="copyToClipboard('dec-coordinates')">Copiar</button>
+            </div>
+        </div>
+        <div class="input-group">
+            <label for="dec-lat">DEC LAT:</label>
+            <div class="input-wrapper">
+                <input type="text" id="dec-lat" readonly>
+                <button onclick="copyToClipboard('dec-lat')">Copiar</button>
+            </div>
+        </div>
+        <div class="input-group">
+            <label for="dec-long">DEC LONG:</label>
+            <div class="input-wrapper">
+                <input type="text" id="dec-long" readonly>
+                <button onclick="copyToClipboard('dec-long')">Copiar</button>
+            </div>
+        </div>
+        <div class="input-group">
+            <label for="dme-lat">DME LAT:</label>
+            <div class="input-wrapper">
+                <input type="text" id="dme-lat" readonly>
+                <button onclick="copyToClipboard('dme-lat')">Copiar</button>
+            </div>
+        </div>
+        <div class="input-group">
+            <label for="dme-long">DME LONG:</label>
+            <div class="input-wrapper">
+                <input type="text" id="dme-long" readonly>
+                <button onclick="copyToClipboard('dme-long')">Copiar</button>
+            </div>
+        </div>
+    </div>
+    <div class="copy-feedback">Copiado!</div>
+
+    <script>
+        function decToDme(dec) {
+            const isNegative = dec < 0;
+            const absDec = Math.abs(dec);
+            const degrees = Math.floor(absDec);
+            const minutes = Math.floor((absDec - degrees) * 60);
+            const seconds = ((absDec - degrees - minutes / 60) * 3600).toFixed(3);
+            return {
+                degrees: degrees,
+                minutes: minutes,
+                seconds: seconds,
+                isNegative: isNegative
+            };
+        }
+
+        function updateDme() {
+            const decCoordinates = document.getElementById('dec-coordinates').value;
+            const coordinatesArray = decCoordinates.split(',');
+            if (coordinatesArray.length === 2) {
+                const decLat = parseFloat(coordinatesArray[0].trim());
+                const decLong = parseFloat(coordinatesArray[1].trim());
+                const latDme = decToDme(decLat);
+                const longDme = decToDme(decLong);
+                
+                document.getElementById('dec-lat').value = decLat;
+                document.getElementById('dec-long').value = decLong;
+                document.getElementById('dme-lat').value = (latDme.isNegative ? '-' : '') + latDme.degrees + ' ' + latDme.minutes + ' ' + latDme.seconds;
+                document.getElementById('dme-long').value = (longDme.isNegative ? '-' : '') + longDme.degrees + ' ' + longDme.minutes + ' ' + longDme.seconds;
+            }
+        }
+
+        function copyToClipboard(id) {
+            const input = document.getElementById(id);
+            input.select();
+            document.execCommand('copy');
+            
+            const feedback = document.querySelector('.copy-feedback');
+            feedback.style.display = 'block';
+            setTimeout(() => {
+                feedback.style.display = 'none';
+            }, 2000);
+        }
+
+        document.getElementById('dec-coordinates').addEventListener('input', updateDme);
+        updateDme();
+    </script>
+</body>
+</html>
